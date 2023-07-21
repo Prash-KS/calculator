@@ -1,94 +1,185 @@
-function compute(first = null, mid = null, last = null) {
+let operatorList = ['/', '*', '-', '+'];
 
+function compute() {
     let buttons = document.querySelectorAll('button');
+    let operation = ['0'];
+    let currentOperator = '';
+    let isDecimal = false;
+    let sign = '+';
 
-    function clickButton() {
-        if (mid == null && this.className == 'operand') {
-            if (first == 0 || first == null) {
-                first = parseInt(this.textContent);
-              } else {
-                first = parseInt(first.toString() + this.textContent);
-              }
-              printScreen(first);
+    buttons.forEach(button => {
+        button.removeEventListener('click', clickButton);
+        button.addEventListener('click', clickButton);
+
+        function clickButton() {
+            let lastElement = operation[operation.length-1];
+            if (operation == 'ERROR') {
+                operation = ['0'];
+            }
+            if (button.className == 'operand') {
+                if (operation == '0') {
+                    operation[0] = button.textContent
+                }
+                else if (button.textContent == '0' && operation[operation.length-1] == 0 && operatorList.some(item => operation[operation.length-2].includes(item))) {
+                    // Do nothing
+                }
+                else {
+                    operation.push(button.textContent);
+                }
+            }
+
+            if (button.className == 'operator') {
+                if (operation.some(item => operatorList.includes(item))) {
+                    if (operatorList.some(item => lastElement.includes(item)) == false) {
+                        [sign, operation] = getOperand(sign, operation);
+                        if (operation != 'ERROR') {
+                            operation.push(button.textContent);
+                            currentOperator = button.textContent;
+                        }
+                    }
+                    else {
+                        operation.pop();
+                        operation.push(button.textContent);
+                        currentOperator = button.textContent;
+                    }
+                }
+                else if (operation != '0' && lastElement != '.') {
+                    operation.push(button.textContent);
+                    currentOperator = button.textContent;
+                }
+                isDecimal = false; 
+            }
+
+            if (button.className == 'delete') {
+                if (lastElement == '.') {
+                    isDecimal = false;
+                }
+                operation.pop();
+                if (operation == '') {
+                    operation[0] = '0';
+                }
+            }
+
+            if (button.className == 'clear') {
+                operation = [];
+                operation[0] = '0';
+                isDecimal = false;
+                sign = '+';
+            }
+
+            if (button.className == 'decimal') {
+                if (isDecimal == false && operatorList.some(item => lastElement.includes(item)) == false) {
+                    operation.push('.');
+                    isDecimal = true;
+                }
+            }
+
+            if (button.className == 'equal') {
+                if (operation.some(item => operatorList.includes(item)) && operatorList.some(item => lastElement.includes(item)) == false) {
+                    [sign, operation] = getOperand(sign, operation);
+                }
+            }
+
+
+
+            let screen = document.querySelector('.screen');
+            screen.textContent = printScreen(sign, operation);
+            console.log(sign, operation);
+
+
         }
-        if (last == null && this.className == 'operator') {
-            mid = this.textContent;
-            printScreen(first, mid);
-        }
-        if (mid != null && this.className == 'operand') {
-            if (last == 0 || last == null) {
-                last = parseInt(this.textContent);
-              } else {
-                last = parseInt(last.toString() + this.textContent);
-              }
-              printScreen(first, mid, last);
-        }
-        if (mid != null && last != null && this.className == 'operator') {
-            getOperator(first, mid, last, this.textContent);
-        }
-    }
-
-    function addClickButton() {
-        buttons.forEach(button => {
-            button.removeEventListener('click', clickButton);
-            button.addEventListener('click', clickButton);
-        });
-    }
-    addClickButton();
+    });
 }
 
-function getOperator(first, mid, last, newMid) {
-    if (mid == '/') {
-        divide(first, last, newMid);
-    }
-    else if (mid == '*') {
-        multiply(first, last, newMid);
-    }
-    else if (mid == '-') {
-        subtract(first, last, newMid);
-    }
-    else if (mid == '+') {
-        add(first, last, newMid);
-    }
-}
-
-function add(first, last, newMid) {
-    let sum = first+last;
-    printScreen(sum, newMid);
-    compute(sum, newMid, null);
-}
-
-function subtract (first, last, newMid) {
-    let dif = first-last;
-    printScreen(dif, newMid);
-    compute(dif, newMid, null);
-}
-
-function multiply (first, last, newMid) {
-    let mul = first*last;
-    printScreen(mul, newMid);
-    compute(mul, newMid, null);
-}
-
-function divide (first, last, newMid) {
-    let div = Math.round(first/last*10000) / 10000;
-    printScreen(div, newMid);
-    compute(div, newMid, null);
-}
-
-function printScreen(first = 0, mid = null, last = null) {
-    let screen = document.querySelector('.screen');
-    if (mid == null) {
-        screen.textContent = first;
-    }
-    else if (mid != null && last == null) {
-        screen.textContent = first + ' ' + mid;
+function printScreen(sign, operation) {
+    if (sign == '-') {
+        return sign + operation.join('');
     }
     else {
-        screen.textContent = first + ' ' + mid + ' ' + last;
+        return operation.join('');
     }
 }
+
+function getOperand(sign, operation) {
+    let operator = getOperator(operation);
+    let operationString = operation.join('');
+    let operand = operationString.split(operator);
+    if (sign == '-') {
+        operand[0] = sign+operand[0];
+    }
+    let result;
+    if (operator == '+') {
+        result = parseFloat(operand[0]) + parseFloat(operand[1]);
+    }    
+    else if (operator == '-') {
+        result = parseFloat(operand[0]) - parseFloat(operand[1]);
+    }
+    else if (operator == '*') {
+        result = parseFloat(operand[0]) * parseFloat(operand[1]);
+    }
+    else if (operator == '/') {
+        if (parseFloat(operand[1]) == 0) {
+            return [sign='+', ['ERROR']];
+        }
+        result = parseFloat(operand[0]) / parseFloat(operand[1]);
+    }
+
+    operation = [];
+    if (result < 0) {
+        sign = '-';
+        result = result * -1;
+    }
+    else {
+        sign = '+';
+    }
+    result = parseFloat(result.toFixed(4));
+    resultString = result.toString();
+    operation.push(resultString);
+    return [sign, operation];
+} 
+
+function getOperator(operation) {
+    let operator = '';
+    let toInt = [];
+    for (let i=0; i<operation.length; i++) {
+        if (operation[i] == '.') {
+            toInt.push(0);
+        }
+        else {
+            toInt.push(parseInt(operation[i]));
+        }
+        if (isNaN(toInt[i])) {
+            operator = operation[i];
+        }
+    }
+    return operator;
+}
+
 
 compute();
 
-// create del function first, use array
+
+
+
+// in the equal function, pass operation as well as sign
+
+
+// function first() {
+//     let a = 50;
+//     a = sec(a);
+//     console.log(a);
+// }
+
+// function sec(a) {
+//     let b = 10 + a;
+//     b = third(b);
+//     return b;
+// }
+
+// function third(b) {
+//     let c = b + 10;
+//     return c;
+// }
+
+//first();
+

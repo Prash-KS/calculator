@@ -1,3 +1,59 @@
+body {
+    display: flex;
+    justify-content: center;
+    background-color: rgb(17, 17, 17);
+}
+
 .keys {
     display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.one, .two, .three, .four, .five {
+    display: flex;
+    gap: 20px;
+}
+
+
+button {
+    width: 70px;
+    height: 70px;
+    border-radius: 10px;
+    background-color: rgb(15, 15, 15);
+    border: solid 3px rgb(0, 17, 255);
+    color: white;
+    font-size: 30px;
+    font-family: 'Averia Sans Libre', cursive;
+}
+
+.clear, .delete {
+    width: 160px;
+}
+
+.screen {
+    white-space: normal;
+    word-wrap: break-word;
+    padding: 10px;
+    margin: 20px;
+    text-align: right;
+    font-size: 30px;
+    border-radius: 5px;
+    background-color: rgb(17, 17, 17);
+    border: solid 3px rgb(0, 17, 255);
+    color: white;
+    font-family: 'Averia Sans Libre', cursive;
+}
+
+.calc {
+    display: flex;
+    flex-direction: column;
+    margin-top: 50px;
+    width: 380px;
+    height: 550px;
+    border-radius: 5%;
+    background-color: rgb(34, 34, 34);
+    border: solid 3px rgb(0, 17, 255);
 }
